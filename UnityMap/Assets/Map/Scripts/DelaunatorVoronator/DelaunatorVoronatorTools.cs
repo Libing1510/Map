@@ -20,9 +20,9 @@ namespace YJ.Map.DelaunatorVoronator
                 List<Vector3> vertices = new List<Vector3>();
                 triangles.ForEach(t =>
                 {
-                    vertices.Add(t.Point1.ToSNVector2().ToSNVector3());
-                    vertices.Add(t.Point2.ToSNVector2().ToSNVector3());
-                    vertices.Add(t.Point3.ToSNVector2().ToSNVector3());
+                    vertices.Add(t.Point1.ToSnVector2().ToSnVector3());
+                    vertices.Add(t.Point2.ToSnVector2().ToSnVector3());
+                    vertices.Add(t.Point3.ToSnVector2().ToSnVector3());
                 });
                 var triang = Enumerable.Range(0, vertices.Count);
                 var normals = Enumerable.Repeat(Vector3.UnitY, vertices.Count);
@@ -46,16 +46,16 @@ namespace YJ.Map.DelaunatorVoronator
                 if (polygon == null) continue;
                 var valids = new List<bool>();
                 //点在地面不在墙面
-                polygon.ForEach(p => valids.Add(ground.IsPointInsdie(p.ToSNVector2())
-                                    && !wall.IsPointInsdie(p.ToSNVector2())));
+                polygon.ForEach(p => valids.Add(ground.IsPointInsdie(p.ToSnVector2())
+                                    && !wall.IsPointInsdie(p.ToSnVector2())));
                 for (int j = 1; j < polygon.Count; j++)
                 {
                     if (valids[j - 1] && valids[j])
-                        roadLines.Add(new Line2D(polygon[j - 1].ToSNVector2(), polygon[j].ToSNVector2()));
+                        roadLines.Add(new Line2D(polygon[j - 1].ToSnVector2(), polygon[j].ToSnVector2()));
                 }
                 //首尾相连
                 if (valids[0] && valids[^1])
-                    roadLines.Add(new Line2D(polygon[0].ToSNVector2(), polygon[^1].ToSNVector2()));
+                    roadLines.Add(new Line2D(polygon[0].ToSnVector2(), polygon[^1].ToSnVector2()));
             }
             return roadLines;
         }

@@ -10,7 +10,7 @@ using YJ.Unity.Extension;
 
 namespace YJ.Unity.Editor
 {
-    public class MapSimple2DWindow : EditorWindow
+    internal class MapSimple2DWindow : BaseEditorWIndow
     {
         #region Property
 
@@ -20,7 +20,6 @@ namespace YJ.Unity.Editor
         private float m_wallHigh = 1.0f;
         private float m_wallMinHigh = 1.0f;
         private float m_wallExtend = 0.1f;
-        private bool m_error;
         private object m_Lock;
         private GameObject m_wallGO;
         private GameObject m_groundGO;
@@ -45,14 +44,15 @@ namespace YJ.Unity.Editor
             m_Lock = new object();
             m_CreateQueue = new Queue<NewMesh>();
             titleContent = new GUIContent();
-            titleContent.text = "¼òµ¥¶şÎ¬µØÍ¼Éú³É´°¿Ú";
+            titleContent.text = "ç®€å•äºŒç»´åœ°å›¾ç”Ÿæˆçª—å£";
         }
 
         #endregion Create Window
 
-        private void OnGUI()
+        protected override void OnGUI()
         {
-            m_error = false;
+            base.OnGUI();
+
             SelectTargetModel();
             SplitParameters();
             SplitButton();
@@ -71,95 +71,69 @@ namespace YJ.Unity.Editor
         private void SelectTargetModel()
         {
             GUILayout.Space(10);
-            GUILayout.Label("É¨ÃèµØÍ¼Model:", EditorStyles.boldLabel);
+            GUILayout.Label("æ‰«æåœ°å›¾Model:", EditorStyles.boldLabel);
             GUILayout.BeginHorizontal("box");
-            if (GUILayout.Button("Ñ¡ÔñÎÄ¼ş"))
-                SelectFile();
+            if (GUILayout.Button("é€‰æ‹©æ–‡ä»¶"))
+                m_TargetPath = SelectFile("glb");
             GUILayout.TextField(m_TargetPath);
             GUILayout.EndHorizontal();
             m_TargetGO = EditorGUILayout.ObjectField(m_TargetGO, typeof(GameObject), false) as GameObject;
             if (string.IsNullOrEmpty(m_TargetPath) && m_TargetGO == null)
-                ShowError("ÇëÏÈÑ¡ÔñµØÍ¼Model £¡£¡£¡");
+                ShowError("è¯·å…ˆé€‰æ‹©åœ°å›¾Model ï¼ï¼ï¼");
         }
 
         private void SplitParameters()
         {
             GUILayout.Space(10);
 
-            GUILayout.Label("ÅäÖÃ²ğ·Ö²ÎÊı", EditorStyles.boldLabel);
+            GUILayout.Label("é…ç½®æ‹†åˆ†å‚æ•°", EditorStyles.boldLabel);
             GUILayout.Space(2);
             GUILayout.BeginHorizontal("box");
-            GUILayout.Label("µØÃæ×î´ó¸ß¶È");
+            GUILayout.Label("åœ°é¢æœ€å¤§é«˜åº¦");
             m_groundHigh = EditorGUILayout.FloatField(m_groundHigh);
             GUILayout.EndHorizontal();
             if (m_groundHigh < 0.02f)
-                ShowWarning("È·ÈÏµØÃæÓĞÕâÃ´µÍÂğ £¿£¿£¿");
+                ShowWarning("ç¡®è®¤åœ°é¢æœ‰è¿™ä¹ˆä½å— ï¼Ÿï¼Ÿï¼Ÿ");
 
             GUILayout.Space(1);
             GUILayout.BeginHorizontal("box");
-            GUILayout.Label("Ç½Ãæ×îĞ¡¸ß¶È");
+            GUILayout.Label("å¢™é¢æœ€å°é«˜åº¦");
             m_wallMinHigh = EditorGUILayout.FloatField(m_wallMinHigh);
             m_wallHigh = m_groundHigh + m_wallMinHigh;
             GUILayout.EndHorizontal();
             if (m_wallMinHigh < 0.1f)
-                ShowError("Ç½Ãæ×îĞ¡¸ß¶È¹ıĞ¡ÁË £¡£¡£¡");
+                ShowError("å¢™é¢æœ€å°é«˜åº¦è¿‡å°äº† ï¼ï¼ï¼");
 
             GUILayout.BeginHorizontal("box");
-            GUILayout.Label("Ç½ÃæÍâÀ©¾àÀë");
+            GUILayout.Label("å¢™é¢å¤–æ‰©è·ç¦»");
             m_wallExtend = EditorGUILayout.FloatField(m_wallExtend);
             m_wallExtend = Mathf.Clamp(m_wallExtend, 0.0f, 10);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal("box");
-            GUILayout.Label("µØÃæ²ÄÖÊÇò");
+            GUILayout.Label("åœ°é¢æè´¨çƒ");
             m_groundMat = EditorGUILayout.ObjectField(m_groundMat, typeof(Material), false) as Material;
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal("box");
-            GUILayout.Label("Ç½Ãæ²ÄÖÊÇò");
+            GUILayout.Label("å¢™é¢æè´¨çƒ");
             m_wallMat = EditorGUILayout.ObjectField(m_wallMat, typeof(Material), false) as Material;
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal("box");
-            GUILayout.Label("Ô­Ê¼Mesh²ÄÖÊÇò");
+            GUILayout.Label("åŸå§‹Meshæè´¨çƒ");
             m_originMat = EditorGUILayout.ObjectField(m_originMat, typeof(Material), false) as Material;
             GUILayout.EndHorizontal();
         }
 
-        private void SelectFile()
-        {
-            // ´ò¿ªÎÄ¼şÑ¡Ôñ¶Ô»°¿ò
-            string path = EditorUtility.OpenFilePanel("Select File", "", "glb");
-            if (!string.IsNullOrEmpty(path))
-            {
-                m_TargetPath = path; // ¸üĞÂÑ¡ÔñµÄÂ·¾¶
-            }
-        }
-
         private void SplitButton()
         {
-            if (m_error) return;
+            if (m_Error) return;
 
-            if (GUILayout.Button("¿ªÊ¼Éú³É"))
+            if (GUILayout.Button("å¼€å§‹ç”Ÿæˆ"))
             {
                 m_wallGO = new GameObject($"Walls");
                 m_groundGO = new GameObject($"Grounds");
                 CreateMap();
             }
-        }
-
-        private void ShowError(string msg)
-        {
-            EditorGUILayout.HelpBox(msg, MessageType.Error);
-            m_error = true;
-        }
-
-        private void ShowWarning(string msg)
-        {
-            EditorGUILayout.HelpBox(msg, MessageType.Warning);
-        }
-
-        private void ShowInfo(string msg)
-        {
-            EditorGUILayout.HelpBox(msg, MessageType.Info);
         }
 
         #endregion UI
@@ -171,13 +145,13 @@ namespace YJ.Unity.Editor
             {
                 if (!File.Exists(m_TargetPath))
                 {
-                    EditorUtility.DisplayDialog("´íÎó", "Ñ¡ÔñÎÄ¼ş²»´æÔÚ", "È·ÈÏ");
+                    EditorUtility.DisplayDialog("é”™è¯¯", "é€‰æ‹©æ–‡ä»¶ä¸å­˜åœ¨", "ç¡®è®¤");
                     m_TargetPath = null;
                     return;
                 }
 
                 meshInfos = LoadMesh.LoadGLBMesh(m_TargetPath);
-                Debug.Log($"¼ÓÔØµ½ {meshInfos.Count()}");
+                Debug.Log($"åŠ è½½åˆ° {meshInfos.Count()}");
 
                 var root = new GameObject("Root");
                 foreach (var item in meshInfos)
@@ -190,7 +164,7 @@ namespace YJ.Unity.Editor
                 var meshFilter = m_TargetGO.GetComponentsInChildren<MeshFilter>();
                 if (meshFilter.Length == 0)
                 {
-                    EditorUtility.DisplayDialog("´íÎó", "µØÍ¼Ä£ĞÍÏÂÃ»ÓĞMeshFilter", "ÖØĞÂÑ¡Ôñ");
+                    EditorUtility.DisplayDialog("é”™è¯¯", "åœ°å›¾æ¨¡å‹ä¸‹æ²¡æœ‰MeshFilter", "é‡æ–°é€‰æ‹©");
                     m_TargetGO = null;
                     return;
                 }
@@ -220,7 +194,7 @@ namespace YJ.Unity.Editor
             void OnWallComplete(int id, List<System.Numerics.Vector3> vertices, string name)
             {
                 var verts = vertices.Select(v => v.ToUVector3());
-                var vects = vertices.Select(v => v.ToSNVector2());
+                var vects = vertices.Select(v => v.ToSnVector2());
                 lock (m_Lock)
                 {
                     m_CreateQueue.Enqueue(new NewMesh(id, false, verts, name, vects));
@@ -229,7 +203,7 @@ namespace YJ.Unity.Editor
             void OnGroundComplete(int id, List<System.Numerics.Vector3> vertices, string name)
             {
                 var verts = vertices.Select(v => v.ToUVector3());
-                var vects = vertices.Select(v => v.ToSNVector2());
+                var vects = vertices.Select(v => v.ToSnVector2());
                 lock (m_Lock)
                 {
                     m_CreateQueue.Enqueue(new NewMesh(id, true, verts, name, vects));

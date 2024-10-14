@@ -1,5 +1,6 @@
 ﻿using Clipper2Lib;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 
@@ -10,13 +11,14 @@ namespace YJ.Map.Clip
         private PathsD m_Polygons;
         internal PathsD polygons => m_Polygons;
 
-        public List<List<Vector2>> GetVectors()
+        public List<List<Vector2>> GetVectors(int minCount=0)
         {
             List<List<Vector2>> vectors = new List<List<Vector2>>();
             m_Polygons.ForEach(pds =>
             {
+                if (pds.Count <= minCount) return;
                 var vects = new List<Vector2>();
-                pds.ForEach(pd => vects.Add(pd.ToSNVector2()));
+                pds.ForEach(pd => vects.Add(pd.ToSnVector2()));
                 vectors.Add(vects);
             });
             return vectors;
@@ -115,13 +117,26 @@ namespace YJ.Map.Clip
             bool result = false;
             for (int i = 0; i < m_Polygons.Count; i++)
             {
-                if (Clipper.PointInPolygon(point, m_Polygons[i]) != PointInPolygonResult.IsOutside)
+                if (Clipper.PointInPolygon(point, m_Polygons[i]) == PointInPolygonResult.IsInside)
                 {
                     result = true;
                     break;
                 }
             }
             return result;
+        }
+        
+        public void SavePolygon(string path)
+        {
+            if (m_Polygons == null) return;
+            var vectors = GetVectors();
+            var lines = new List<string>();
+            vectors.ForEach(vects =>
+            {
+                var strs = vects.Select(v => $"{v.X},{v.Y}");
+                lines.Add(string.Join("!", strs));
+            });
+            File.WriteAllLines(path, lines.ToArray());
         }
     }
 }

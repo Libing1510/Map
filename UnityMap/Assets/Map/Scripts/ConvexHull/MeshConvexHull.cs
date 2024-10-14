@@ -60,15 +60,15 @@ namespace YJ.Map.ConvexHull
 
         private Vector3[] ExpandVertices(Vector3[] vertices, float factor)
         {
-            Vector3 centroid = CalculateCentroid(vertices); // 计算重心
+            Vector3 centroid = CalculateCentroid(vertices); // 璁＄畻閲嶅績
             Vector3[] scaledVertices = new Vector3[vertices.Length];
 
             for (int i = 0; i < vertices.Length; i++)
             {
-                // 计算当前顶点相对于重心的方向向量
+                // 璁＄畻褰撳墠椤剁偣鐩稿浜庨噸蹇冪殑鏂瑰悜鍚戦噺
                 Vector3 direction = (vertices[i] - centroid).ToNormalized();
 
-                // 按照给定的倍数缩放
+                // 鎸夌収缁欏畾鐨勫�嶆暟缂╂斁
                 scaledVertices[i] = vertices[i] + direction * factor;
             }
 
@@ -83,7 +83,7 @@ namespace YJ.Map.ConvexHull
             {
                 centroid += vertex;
             }
-            return centroid / vertices.Length; // 返回重心
+            return centroid / vertices.Length; // 杩斿洖閲嶅績
         }
     }
 }

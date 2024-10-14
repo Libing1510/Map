@@ -97,7 +97,7 @@ namespace YJ.Map
             Voronator();
             void OnConvexHullWallComplete(int id, List<Vector3> vertices, string name)
             {
-                var vector2ds = vertices.Select(v => v.ToSNVector2());
+                var vector2ds = vertices.Select(v => v.ToSnVector2());
                 var polygon = new Polygon(vector2ds);
                 if (polygon != null)
                     m_WallPolygons.Add(polygon);
@@ -105,7 +105,7 @@ namespace YJ.Map
             }
             void OnConvexGroundComplete(int id, List<Vector3> vertices, string name)
             {
-                var vector2ds = vertices.Select(v => v.ToSNVector2());
+                var vector2ds = vertices.Select(v => v.ToSnVector2());
                 var polygon = new Polygon(vector2ds);
                 if (polygon != null)
                     m_GroundPolygons.Add(polygon);

@@ -15,12 +15,14 @@ namespace YJ.Unity.Extension
 
         public static Vector2 ToUVector3(this SNVector2 val) => new Vector3(val.X, 0, val.Y);
 
-        public static SNVector2 ToSNVector2(this Vector2 val) => new SNVector2(val.x, val.y);
+        public static SNVector2 ToSnVector2(this Vector2 val) => new SNVector2(val.x, val.y);
 
-        public static SNVector3 ToSNVector3(this Vector3 val) => new SNVector3(val.x, val.y, val.z);
+        public static SNVector3 ToSnVector3(this Vector3 val) => new SNVector3(val.x, val.y, val.z);
 
-        public static SNVector4 ToSNVector4(this Vector4 val) => new SNVector4(val.x, val.y, val.z, val.w);
+        public static SNVector4 ToSnVector4(this Vector4 val) => new SNVector4(val.x, val.y, val.z, val.w);
 
-        public static SNVector2 ToSNVector2(this Vector3 val) => new SNVector2(val.x, val.z);
+        public static SNVector2 ToSnVector2(this Vector3 val) => new SNVector2(val.x, val.z);
+
+        public static Quaternion ToUQuaternion(this SNVector4 val) => new Quaternion(val.X,val.Y,val.Z,val.W);
     }
 }

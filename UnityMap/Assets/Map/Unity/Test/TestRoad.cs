@@ -4,101 +4,101 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using YJ.Map.Dijkstra;
+using YJ.Unity.Extension;
 
 namespace YJ.Unity
 {
     public class TestRoad : MonoBehaviour
     {
-        private List<System.Numerics.Vector3> points = new List<System.Numerics.Vector3>();
-        private List<Edge> edges = new List<Edge>();
-        private List<Node> nodes = new List<Node>();
-        private DijkstraRouter dijkstra;
+        private List<Edge> m_Edges = new List<Edge>();
+        private List<Node> m_Nodes = new List<Node>();
+        private YJMap m_Map;
         public int count = 10;
         public int start = 0;
         public int end = 7;
-        private List<Edge> roads = new List<Edge>();
-
+        [SerializeField]
+        private float m_Disttance;
+        public bool buildRoute;
+        private List<Edge> m_Roads = new List<Edge>();
+        public float boxSize;
         private void Start()
         {
-            //Init();
             ReadLocalMap($"{Application.dataPath}/road.txt");
-            dijkstra = new DijkstraRouter();
-            dijkstra.Initialize(edges, nodes);
-            count = nodes.Count;
         }
 
-        public void ReadLocalMap(string filePath)
+        private void ReadLocalMap(string filePath)
         {
             if (!File.Exists(filePath))
             {
                 Debug.LogError($"cant find {filePath}");
                 return;
             }
-
-            var lines = File.ReadAllLines(filePath);
-            foreach (var line in lines)
-            {
-                var strs = line.Split(new char[] { ',' });
-                var a = new System.Numerics.Vector3(float.Parse(strs[0]), 0.0f, float.Parse(strs[1]));
-                var b = new System.Numerics.Vector3(float.Parse(strs[2]), 0.0f, float.Parse(strs[3]));
-                var aIndex = points.FindIndex(p => p == a);
-                if (aIndex == -1) { points.Add(a); aIndex = points.Count - 1; }
-                var bIndex = points.FindIndex(p => p == b);
-                if (bIndex == -1) { points.Add(b); bIndex = points.Count - 1; }
-                var aNode = new Node(aIndex, a);
-                var bNode = new Node(bIndex, b);
-                if (nodes.FirstOrDefault(n => n.id == aIndex) == null)
-                { nodes.Add(aNode); }
-
-                if (nodes.FirstOrDefault(n => n.id == bIndex) == null)
-                { nodes.Add(bNode); }
-
-                edges.Add(new Edge(aNode, bNode, System.Numerics.Vector3.Distance(a, b)));
-                //if (points.Count > 100) break;
-            }
-            Debug.Log($"read local {filePath} end");
+            m_Map = new YJMap();
+            m_Map.ReadLocalMap(filePath);
+            m_Edges = m_Map.Edges;
+            m_Nodes = m_Map.Nodes;
+            count = m_Nodes.Count;
         }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                var sNode = nodes[start];
-                var dNode = nodes[end];
-                var result = dijkstra.GetRoute(sNode, dNode);
-                if (result != null) roads = result;
-                Debug.Log($"roads:{roads.Count}");
+                GetRoute();
             }
+        }
+
+        private void GetRoute()
+        {
+            var sNode = m_Nodes[start];
+            var dNode = m_Nodes[end];
+            var result = m_Map.GetRoute(sNode, dNode);
+            if (result != null) m_Roads = result.ToList();
+            Debug.Log($"roads:{m_Roads.Count},disntacne={m_Disttance}");
+        }
+
+        public void SetMap(IEnumerable<Node> nodes, IEnumerable<Edge> edges)
+        {
+            m_Map = new YJMap(nodes, edges);
+            m_Edges = m_Map.Edges;
+            m_Nodes = m_Map.Nodes;
+            count = m_Nodes.Count;
             start = Math.Clamp(start, 0, count - 1);
             end = Math.Clamp(end, 0, count - 1);
         }
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.blue;
-            points.ForEach(p =>
+            start = Math.Clamp(start, 0, count - 1);
+            end = Math.Clamp(end, 0, count - 1);
+            if (buildRoute)
             {
-                Gizmos.DrawSphere(ToUnity(p), 0.1f);
+                GetRoute();
+                buildRoute = false;
+            }
+
+            Gizmos.color = Color.blue;
+            m_Nodes.ForEach(p =>
+            {
+                Gizmos.DrawSphere(p.vector.ToUVector3(), 0.1f);
+                Gizmos.DrawWireCube(p.vector.ToUVector3(),Vector3.one*boxSize);
             });
             Gizmos.color = Color.white;
-            edges.ForEach(e =>
+            m_Edges.ForEach(e =>
             {
-                Gizmos.DrawLine(ToUnity(e.aNode.vector), ToUnity(e.bNode.vector));
+                Gizmos.DrawLine(e.aNode.vector.ToUVector3(), e.bNode.vector.ToUVector3());
             });
             Gizmos.color = Color.green;
-            roads.ForEach(p =>
+            m_Roads.ForEach(p =>
             {
-                Gizmos.DrawLine(ToUnity(p.aNode.vector), ToUnity(p.bNode.vector));
+                Gizmos.DrawLine(p.aNode.vector.ToUVector3(), p.bNode.vector.ToUVector3());
             });
-            if (points.Count == 0) return;
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(ToUnity(nodes[start].vector), 0.3f);
-            Gizmos.DrawSphere(ToUnity(nodes[end].vector), 0.3f);
-        }
+            if (m_Nodes.Count == 0) return;
 
-        public static Vector3 ToUnity(System.Numerics.Vector3 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(m_Nodes[start].vector.ToUVector3(), 0.15f);
+            Gizmos.DrawSphere(m_Nodes[end].vector.ToUVector3(), 0.15f);
+            m_Disttance = System.Numerics.Vector3.Distance(m_Nodes[start].vector, m_Nodes[end].vector);
         }
     }
 }

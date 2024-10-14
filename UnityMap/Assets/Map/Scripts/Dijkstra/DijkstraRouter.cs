@@ -5,7 +5,7 @@ using UnityEngine.Scripting;
 
 namespace YJ.Map.Dijkstra
 {
-    public class DijkstraRouter
+    internal class DijkstraRouter
     {
         private float[,] m_Graph;
         private List<Edge> m_Edges;
@@ -27,6 +27,7 @@ namespace YJ.Map.Dijkstra
         /// <param name="nodes"></param>
         public void Initialize(IEnumerable<Edge> edges, IEnumerable<Node> nodes)
         {
+            DateTime now = DateTime.Now;
             m_Edges = edges.ToList();
             m_Nodes = nodes.ToList();
             m_NodeItems.Clear();
@@ -50,6 +51,7 @@ namespace YJ.Map.Dijkstra
                 }
                 m_NodeItems.Add(new NodeItem(row, rowNode));
             }
+            Logger.Info($"DijkstraRouter: init time={DateTime.Now - now}");
         }
 
         /// <summary>

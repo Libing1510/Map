@@ -12,11 +12,19 @@ namespace YJ.Unity
         public Color lineColor = Color.white;
 
         private List<List<Vector3>> m_Points;
+        public int index;
+        private int m_ReadIndex;
 
         private void Start()
         {
+            ReadPolygon($"{Application.dataPath}/{file}");
+        }
+
+        private void ReadPolygon(string file)
+        {
+            if (string.IsNullOrEmpty(this.file)) return;
             m_Points = new List<List<Vector3>>();
-            var lines = File.ReadAllLines($"{Application.dataPath}/{file}");
+            var lines = File.ReadAllLines(file);
             lines.ToList().ForEach(line =>
             {
                 var vects = new List<Vector3>();
@@ -32,6 +40,11 @@ namespace YJ.Unity
 
         private void OnDrawGizmos()
         {
+            if (index != m_ReadIndex)
+            {
+                ReadPolygon($"D:/TestPolygon/polygon_{index}.txt");
+            }
+
             if (m_Points == null) return;
             m_Points.ForEach(p =>
             {
